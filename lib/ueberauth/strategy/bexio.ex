@@ -6,7 +6,6 @@ defmodule Ueberauth.Strategy.Bexio do
   use Ueberauth.Strategy,
     uid_field: :id,
     default_scope: "email profile openid",
-    # TODO: fix this so I don't need it anymore!
     userinfo_endpoint: "https://idp.bexio.com/userinfo"
 
   alias Ueberauth.Auth.Info

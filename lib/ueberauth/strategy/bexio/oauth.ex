@@ -16,7 +16,6 @@ defmodule Ueberauth.Strategy.Bexio.OAuth do
     site: "https://idp.bexio.com/.well-known/openid-configuration",
     authorize_url: "https://idp.bexio.com/authorize",
     token_url: "https://idp.bexio.com/token",
-    userinfo_url: "https://idp.bexio.com/userinfo",
     token_method: :post
   ]
 
