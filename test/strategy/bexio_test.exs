@@ -88,7 +88,7 @@ defmodule Ueberauth.Strategy.BexioTest do
              "client_id" => "client_id",
              "redirect_uri" => "http://www.example.com/auth/bexio/callback", # TODO fix this
              "response_type" => "code",
-             "scope" => "email openid profile",
+             "scope" => "profile email openid",
              "hd" => "example.com",
              "hl" => "es"
            } = Plug.Conn.Query.decode(redirect_uri.query)
@@ -111,7 +111,7 @@ defmodule Ueberauth.Strategy.BexioTest do
     routes = Ueberauth.init() |> set_options(conn, uid_field: "uid_field")
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
     assert auth.info.name == "Jane Doe"
-    assert auth.uid == "1234_Jane"
+    assert auth.uid == "1234_jane"
   end
 
   test "userinfo is fetched according to userinfo_endpoint", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
