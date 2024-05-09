@@ -1,4 +1,4 @@
-# Überauth Google
+# Überauth Bexio
 
 [![Continuous Integration](https://.svg)](workflows/cy)
 [![Module Version](https://img.shields.io/hexpm/v/ueberauth_bexio.svg)](https://hex.pm/packages/ueberauth_bexio)
@@ -48,7 +48,7 @@
     variables in the run time:
 
     ```elixir
-    config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+    config :ueberauth, Ueberauth.Strategy.Bexio.OAuth,
       client_id: {System, :get_env, ["BEXIO_CLIENT_ID"]},
       client_secret: {System, :get_env, ["BEXIO_CLIENT_SECRET"]}
     ```
@@ -93,7 +93,7 @@ By default the requested scope is "email". Scope can be configured either explic
 ```elixir
 config :ueberauth, Ueberauth,
   providers: [
-    google: {Ueberauth.Strategy.Bexio, [default_scope: "openid email profile"]}
+    bexio: {Ueberauth.Strategy.Bexio, [default_scope: "openid email profile"]}
   ]
 ```
 

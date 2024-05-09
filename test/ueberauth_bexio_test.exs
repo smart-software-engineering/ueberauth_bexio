@@ -1,8 +1,4 @@
 defmodule UeberauthBexioTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest UeberauthBexio
-
-  test "greets the world" do
-    assert UeberauthBexio.hello() == :world
-  end
 end
