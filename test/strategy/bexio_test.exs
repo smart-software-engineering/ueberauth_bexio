@@ -47,20 +47,20 @@ defmodule Ueberauth.Strategy.BexioTest do
     do: {:error, %OAuth2.Response{body: %{"error" => "internal_failure"}}}
 
   def oauth2_get(%{token: %{access_token: "success_token"}}, _url, _, _),
-    do: response(%{"sub" => "1234_john", "name" => "John Doe", "email" => "john_doe@example.com"})
+    do: response(%{"id" => "1234_john", "name" => "John Doe", "email" => "john_doe@example.com"})
 
   def oauth2_get(%{token: %{access_token: "uid_token"}}, _url, _, _),
     do: response(%{"uid_field" => "1234_jane", "name" => "Jane Doe"})
 
   # TODO: fix the URL for the token here
-  def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "https://www.googleapis.com/oauth2/v3/userinfo", _, _),
-    do: response(%{"sub" => "1234_wilma", "name" => "Wilma Stone"})
+  def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "https://idp.bexio.com/userinfo", _, _),
+    do: response(%{"id" => "1234_wilma", "name" => "Wilma Stone"})
 
   def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "example.com/shaggy", _, _),
-    do: response(%{"sub" => "1234_shaggy", "name" => "Fred Stone"})
+    do: response(%{"id" => "1234_shaggy", "name" => "Fred Stone"})
 
   def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "example.com/scooby", _, _),
-    do: response(%{"sub" => "1234_scooby", "name" => "Scooby Doo"})
+    do: response(%{"id" => "1234_scooby", "name" => "Scooby Doo"})
 
   defp set_csrf_cookies(conn, csrf_conn) do
     conn
@@ -79,18 +79,15 @@ defmodule Ueberauth.Strategy.BexioTest do
     assert resp.status == 302
     assert [location] = get_resp_header(resp, "location")
 
-    # TODO: fix this url
     redirect_uri = URI.parse(location)
-    assert redirect_uri.host == "accounts.google.com" # TODO fix this
-    assert redirect_uri.path == "/o/oauth2/v2/auth"
+    assert redirect_uri.host == "idp.bexio.com"
+    assert redirect_uri.path == "/authorize"
 
     assert %{
              "client_id" => "client_id",
-             "redirect_uri" => "http://www.example.com/auth/bexio/callback", # TODO fix this
+             "redirect_uri" => "http://www.example.com/auth/bexio/callback",
              "response_type" => "code",
-             "scope" => "profile email openid",
-             "hd" => "example.com",
-             "hl" => "es"
+             "scope" => "profile email openid"
            } = Plug.Conn.Query.decode(redirect_uri.query)
   end
 

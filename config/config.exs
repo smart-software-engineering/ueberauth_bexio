@@ -7,5 +7,4 @@ config :ueberauth, Ueberauth,
 
 config :ueberauth, Ueberauth.Strategy.Bexio.OAuth,
   client_id: "client_id",
-  client_secret: "client_secret",
-  token_url: "token_url"
+  client_secret: "client_secret"

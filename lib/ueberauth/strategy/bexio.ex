@@ -3,36 +3,34 @@ defmodule Ueberauth.Strategy.Bexio do
   Bexio Strategy for Überauth.
   """
 
-  # General TODO: remove all the "flexible" configuration because bexio simply doesn't support this for oauth
-
   use Ueberauth.Strategy,
-    uid_field: :sub,
-    default_scope: "openid profile email",
-    hd: nil,
-    # TODO: do I need hd? and replace the userinfo_endpoint
-    userinfo_endpoint: "https://www.googleapis.com/oauth2/v3/userinfo"
+    uid_field: :id,
+    default_scope: "email profile openid",
+    # TODO: fix this so I don't need it anymore!
+    userinfo_endpoint: "https://idp.bexio.com/userinfo"
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
   alias Ueberauth.Auth.Extra
 
   @doc """
-  Handles initial request for Google authentication.
+  Handles initial request for Bexio authentication.
+
+  To customize the scope (permissions) that are requested by bexio include them as part of your url:
+
+      "/auth/bexio?scope=api read_user read_registry"
+
+  The request will include the state parameter that was set by ueberauth (if available)
   """
   def handle_request!(conn) do
     scopes = conn.params["scope"] || option(conn, :default_scope)
 
     params =
       [scope: scopes]
-      |> with_optional(:hd, conn) # TODO hd needed?
       |> with_optional(:prompt, conn)
       |> with_optional(:access_type, conn)
-      |> with_optional(:login_hint, conn)
-      |> with_optional(:include_granted_scopes, conn) # TODO does bexio support this?
       |> with_param(:access_type, conn) # TODO: does bexio support this?
       |> with_param(:prompt, conn) # TODO: does bexio support this?
-      |> with_param(:login_hint, conn) # TODO: does bexio support this?
-      |> with_param(:hl, conn) # TODO: does bexio support this?
       |> with_state_param(conn)
 
     opts = oauth_client_options_from_conn(conn)
@@ -133,8 +131,7 @@ defmodule Ueberauth.Strategy.Bexio do
   defp fetch_user(conn, token) do
     conn = put_private(conn, :bexio_token, token)
 
-    # TODO: fix the userinfo_endpoint
-    # userinfo_endpoint from https://accounts.google.com/.well-known/openid-configuration
+    # userinfo_endpoint from https://idp.bexio.com/.well-known/openid-configuration
     # the userinfo_endpoint may be overridden in options when necessary.
     resp = Ueberauth.Strategy.Bexio.OAuth.get(token, get_userinfo_endpoint(conn))
 

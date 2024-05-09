@@ -13,12 +13,11 @@ defmodule Ueberauth.Strategy.Bexio.OAuth do
 
   @defaults [
     strategy: __MODULE__,
-    # TODO: fix this
-    site: "https://accounts.google.com",
-    # TODO: fix this
-    authorize_url: "/o/oauth2/v2/auth",
-    # TODO: fix this
-    token_url: "https://www.googleapis.com/oauth2/v4/token"
+    site: "https://idp.bexio.com/.well-known/openid-configuration",
+    authorize_url: "https://idp.bexio.com/authorize",
+    token_url: "https://idp.bexio.com/token",
+    userinfo_url: "https://idp.bexio.com/userinfo",
+    token_method: :post
   ]
 
   @doc """
