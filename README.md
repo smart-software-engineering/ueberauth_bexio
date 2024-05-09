@@ -1,6 +1,6 @@
 # Überauth Bexio
 
-[![Continuous Integration](https://.svg)](workflows/cy)
+[![Continuous Integration](https://github.com/smart-software-engineering/ueberauth_bexio/actions/workflows/main.yml/badge.svg)](https://github.com/smart-software-engineering/ueberauth_bexio/actions/workflows/main.yml/badge.svg)
 [![Module Version](https://img.shields.io/hexpm/v/ueberauth_bexio.svg)](https://hex.pm/packages/ueberauth_bexio)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/ueberauth_bexio/)
 [![Total Download](https://img.shields.io/hexpm/dt/ueberauth_bexio.svg)](https://hex.pm/packages/ueberauth_bexio)
