@@ -2,6 +2,10 @@
 
 ## (Unreleased)
 
+## v0.1.3
+
+- Adding company id
+
 ## v0.1.2
 
 - Adding parsed JWT token to raw info because company_id and login_id combined are unique
