@@ -6,6 +6,9 @@ defmodule Ueberauth.Strategy.BexioTest do
   import Plug.Conn
   import Ueberauth.Strategy.Helpers
 
+  # Regular token with login_id inside
+  @success_token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbl9pZCI6IjU0YzhmMTQyLTExOWMtNDQ5Yy04YzEyLTg5MjY5ZGQ0MzdmOSIsImp0aSI6ImM0NTgyZDRjLWVhZDYtNDhlNS04NjA2LTU4MTRiODBmNDllNiIsImhlbGxvIjoid29ybGQifQ.h2smA-0OHRNd4OjT9DhemVQCGtyi3Fn0oe56oHiJpn8"
+
   setup_with_mocks([
     {OAuth2.Client, [:passthrough],
      [
@@ -34,8 +37,7 @@ defmodule Ueberauth.Strategy.BexioTest do
   defp token(client, opts), do: {:ok, %{client | token: OAuth2.AccessToken.new(opts)}}
   defp response(body, code \\ 200), do: {:ok, %OAuth2.Response{status_code: code, body: body}}
 
-  # TODO: validate this logic!!
-  def oauth2_get_token(client, code: "success_code"), do: token(client, "success_token")
+  def oauth2_get_token(client, code: "success_code"), do: token(client, @success_token)
   def oauth2_get_token(client, code: "uid_code"), do: token(client, "uid_token")
   def oauth2_get_token(client, code: "userinfo_code"), do: token(client, "userinfo_token")
 
@@ -52,13 +54,12 @@ defmodule Ueberauth.Strategy.BexioTest do
   def oauth2_get_token(_client, code: "error_response_no_description"),
     do: {:error, %OAuth2.Response{body: %{"error" => "internal_failure"}}}
 
-  def oauth2_get(%{token: %{access_token: "success_token"}}, _url, _, _),
+  def oauth2_get(%{token: %{access_token: @success_token}}, _url, _, _),
     do: response(%{"id" => "1234_john", "name" => "John Doe", "email" => "john_doe@example.com"})
 
   def oauth2_get(%{token: %{access_token: "uid_token"}}, _url, _, _),
     do: response(%{"uid_field" => "1234_jane", "name" => "Jane Doe"})
 
-  # TODO: fix the URL for the token here
   def oauth2_get(
         %{token: %{access_token: "userinfo_token"}},
         "https://idp.bexio.com/userinfo",
@@ -114,24 +115,23 @@ defmodule Ueberauth.Strategy.BexioTest do
 
     routes = Ueberauth.init([])
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
-    assert auth.credentials.token == "success_token"
+    assert auth.credentials.token == @success_token
     assert auth.info.name == "John Doe"
     assert auth.info.email == "john_doe@example.com"
-    assert auth.uid == "1234_john"
   end
 
-  test "uid_field is picked according to the specified option", %{
+  test "uid_field is extracted from access token", %{
     csrf_state: csrf_state,
     csrf_conn: csrf_conn
   } do
     conn =
-      conn(:get, "/auth/bexio/callback", %{code: "uid_code", state: csrf_state})
+      conn(:get, "/auth/bexio/callback", %{code: "success_code", state: csrf_state})
       |> set_csrf_cookies(csrf_conn)
 
-    routes = Ueberauth.init() |> set_options(conn, uid_field: "uid_field")
+    routes = Ueberauth.init()
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
-    assert auth.info.name == "Jane Doe"
-    assert auth.uid == "1234_jane"
+    assert auth.info.name == "John Doe"
+    assert auth.uid == "54c8f142-119c-449c-8c12-89269dd437f9"
   end
 
   test "userinfo is fetched according to userinfo_endpoint", %{

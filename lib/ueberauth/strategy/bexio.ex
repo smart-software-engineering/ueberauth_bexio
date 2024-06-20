@@ -29,9 +29,7 @@ defmodule Ueberauth.Strategy.Bexio do
       [scope: scopes]
       |> with_optional(:prompt, conn)
       |> with_optional(:access_type, conn)
-      # TODO: does bexio support this?
       |> with_param(:access_type, conn)
-      # TODO: does bexio support this?
       |> with_param(:prompt, conn)
       |> with_state_param(conn)
 
@@ -65,18 +63,17 @@ defmodule Ueberauth.Strategy.Bexio do
     conn
     |> put_private(:bexio_user, nil)
     |> put_private(:bexio_token, nil)
+    |> put_private(:bexio_jwt_payload, nil)
   end
 
   @doc """
-  Fetches the uid field from the response.
+  Fetches the uid field from the JWT payload
   """
   def uid(conn) do
-    uid_field =
-      conn
-      |> option(:uid_field)
-      |> to_string
+    # Do I really need to parse the conn twice because of uberauth?
+    payload = conn.private.bexio_jwt_payload
 
-    conn.private.bexio_user[uid_field]
+    if payload, do: payload.login_id, else: nil
   end
 
   @doc """
@@ -84,6 +81,7 @@ defmodule Ueberauth.Strategy.Bexio do
   """
   def credentials(conn) do
     token = conn.private.bexio_token
+    jwt_payload = conn.private.bexio_jwt_payload
     scope_string = token.other_params["scope"] || ""
     scopes = String.split(scope_string, " ")
 
@@ -93,7 +91,10 @@ defmodule Ueberauth.Strategy.Bexio do
       scopes: scopes,
       token_type: Map.get(token, :token_type),
       refresh_token: token.refresh_token,
-      token: token.access_token
+      token: token.access_token,
+      other: %{
+        jwt_payload: jwt_payload
+      }
     }
   end
 
@@ -122,19 +123,19 @@ defmodule Ueberauth.Strategy.Bexio do
   Stores the raw information (including the token) obtained from the bexio callback.
   """
   def extra(conn) do
-    payload = BexioJwt.parse_jwt_payload(conn.private.bexio_token)
-
     %Extra{
       raw_info: %{
         token: conn.private.bexio_token,
-        user: conn.private.bexio_user,
-        jwt_payload: payload
+        user: conn.private.bexio_user
       }
     }
   end
 
   defp fetch_user(conn, token) do
-    conn = put_private(conn, :bexio_token, token)
+    conn =
+      conn
+      |> put_private(:bexio_token, token)
+      |> put_private(:bexio_jwt_payload, BexioJwt.parse_jwt_payload(token))
 
     # userinfo_endpoint from https://idp.bexio.com/.well-known/openid-configuration
     # the userinfo_endpoint may be overridden in options when necessary.
