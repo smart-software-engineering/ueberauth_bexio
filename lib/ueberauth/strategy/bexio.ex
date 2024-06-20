@@ -11,6 +11,7 @@ defmodule Ueberauth.Strategy.Bexio do
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
   alias Ueberauth.Auth.Extra
+  alias Ueberauth.Strategy.Bexio.BexioJwt
 
   @doc """
   Handles initial request for Bexio authentication.
@@ -28,8 +29,10 @@ defmodule Ueberauth.Strategy.Bexio do
       [scope: scopes]
       |> with_optional(:prompt, conn)
       |> with_optional(:access_type, conn)
-      |> with_param(:access_type, conn) # TODO: does bexio support this?
-      |> with_param(:prompt, conn) # TODO: does bexio support this?
+      # TODO: does bexio support this?
+      |> with_param(:access_type, conn)
+      # TODO: does bexio support this?
+      |> with_param(:prompt, conn)
       |> with_state_param(conn)
 
     opts = oauth_client_options_from_conn(conn)
@@ -119,10 +122,13 @@ defmodule Ueberauth.Strategy.Bexio do
   Stores the raw information (including the token) obtained from the bexio callback.
   """
   def extra(conn) do
+    payload = BexioJwt.parse_jwt_payload(conn.private.bexio_token)
+
     %Extra{
       raw_info: %{
         token: conn.private.bexio_token,
-        user: conn.private.bexio_user
+        user: conn.private.bexio_user,
+        jwt_payload: payload
       }
     }
   end

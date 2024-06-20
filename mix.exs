@@ -29,6 +29,7 @@ defmodule UeberauthBexio.MixProject do
     [
       {:oauth2, "~> 1.0 or ~> 2.0"},
       {:ueberauth, "~> 0.10.0"},
+      {:jason, "~> 1.4"},
       {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false},
       {:mock, "~> 0.3", only: :test}
     ]

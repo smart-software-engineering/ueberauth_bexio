@@ -38,10 +38,16 @@ defmodule Ueberauth.Strategy.BexioTest do
   def oauth2_get_token(client, code: "success_code"), do: token(client, "success_token")
   def oauth2_get_token(client, code: "uid_code"), do: token(client, "uid_token")
   def oauth2_get_token(client, code: "userinfo_code"), do: token(client, "userinfo_token")
-  def oauth2_get_token(_client, code: "oauth2_error"), do: {:error, %OAuth2.Error{reason: :timeout}}
+
+  def oauth2_get_token(_client, code: "oauth2_error"),
+    do: {:error, %OAuth2.Error{reason: :timeout}}
 
   def oauth2_get_token(_client, code: "error_response"),
-    do: {:error, %OAuth2.Response{body: %{"error" => "some error", "error_description" => "something went wrong"}}}
+    do:
+      {:error,
+       %OAuth2.Response{
+         body: %{"error" => "some error", "error_description" => "something went wrong"}
+       }}
 
   def oauth2_get_token(_client, code: "error_response_no_description"),
     do: {:error, %OAuth2.Response{body: %{"error" => "internal_failure"}}}
@@ -53,8 +59,13 @@ defmodule Ueberauth.Strategy.BexioTest do
     do: response(%{"uid_field" => "1234_jane", "name" => "Jane Doe"})
 
   # TODO: fix the URL for the token here
-  def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "https://idp.bexio.com/userinfo", _, _),
-    do: response(%{"id" => "1234_wilma", "name" => "Wilma Stone"})
+  def oauth2_get(
+        %{token: %{access_token: "userinfo_token"}},
+        "https://idp.bexio.com/userinfo",
+        _,
+        _
+      ),
+      do: response(%{"id" => "1234_wilma", "name" => "Wilma Stone"})
 
   def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "example.com/shaggy", _, _),
     do: response(%{"id" => "1234_shaggy", "name" => "Fred Stone"})
@@ -72,7 +83,9 @@ defmodule Ueberauth.Strategy.BexioTest do
   test "handle_request! redirects to appropriate auth uri" do
     conn = conn(:get, "/auth/bexio", %{hl: "es"})
     # Make sure the hd and scope params are included for good measure:
-    routes = Ueberauth.init() |> set_options(conn, hd: "example.com", default_scope: "profile email openid")
+    routes =
+      Ueberauth.init()
+      |> set_options(conn, hd: "example.com", default_scope: "profile email openid")
 
     resp = Ueberauth.call(conn, routes)
 
@@ -91,9 +104,13 @@ defmodule Ueberauth.Strategy.BexioTest do
            } = Plug.Conn.Query.decode(redirect_uri.query)
   end
 
-  test "handle_callback! assigns required fields on successful auth", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
+  test "handle_callback! assigns required fields on successful auth", %{
+    csrf_state: csrf_state,
+    csrf_conn: csrf_conn
+  } do
     conn =
-      conn(:get, "/auth/bexio/callback", %{code: "success_code", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
+      conn(:get, "/auth/bexio/callback", %{code: "success_code", state: csrf_state})
+      |> set_csrf_cookies(csrf_conn)
 
     routes = Ueberauth.init([])
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
@@ -103,35 +120,56 @@ defmodule Ueberauth.Strategy.BexioTest do
     assert auth.uid == "1234_john"
   end
 
-  test "uid_field is picked according to the specified option", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
-    conn = conn(:get, "/auth/bexio/callback", %{code: "uid_code", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
+  test "uid_field is picked according to the specified option", %{
+    csrf_state: csrf_state,
+    csrf_conn: csrf_conn
+  } do
+    conn =
+      conn(:get, "/auth/bexio/callback", %{code: "uid_code", state: csrf_state})
+      |> set_csrf_cookies(csrf_conn)
+
     routes = Ueberauth.init() |> set_options(conn, uid_field: "uid_field")
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
     assert auth.info.name == "Jane Doe"
     assert auth.uid == "1234_jane"
   end
 
-  test "userinfo is fetched according to userinfo_endpoint", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
+  test "userinfo is fetched according to userinfo_endpoint", %{
+    csrf_state: csrf_state,
+    csrf_conn: csrf_conn
+  } do
     conn =
-      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
+      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state})
+      |> set_csrf_cookies(csrf_conn)
 
     routes = Ueberauth.init() |> set_options(conn, userinfo_endpoint: "example.com/shaggy")
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
     assert auth.info.name == "Fred Stone"
   end
 
-  test "userinfo can be set via runtime config with default", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
+  test "userinfo can be set via runtime config with default", %{
+    csrf_state: csrf_state,
+    csrf_conn: csrf_conn
+  } do
     conn =
-      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
+      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state})
+      |> set_csrf_cookies(csrf_conn)
 
-    routes = Ueberauth.init() |> set_options(conn, userinfo_endpoint: {:system, "NOT_SET", "example.com/shaggy"})
+    routes =
+      Ueberauth.init()
+      |> set_options(conn, userinfo_endpoint: {:system, "NOT_SET", "example.com/shaggy"})
+
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
     assert auth.info.name == "Fred Stone"
   end
 
-  test "userinfo uses default library value if runtime env not found", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
+  test "userinfo uses default library value if runtime env not found", %{
+    csrf_state: csrf_state,
+    csrf_conn: csrf_conn
+  } do
     conn =
-      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
+      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state})
+      |> set_csrf_cookies(csrf_conn)
 
     routes = Ueberauth.init() |> set_options(conn, userinfo_endpoint: {:system, "NOT_SET"})
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
@@ -140,9 +178,12 @@ defmodule Ueberauth.Strategy.BexioTest do
 
   test "userinfo can be set via runtime config", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
     conn =
-      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
+      conn(:get, "/auth/bexio/callback", %{code: "userinfo_code", state: csrf_state})
+      |> set_csrf_cookies(csrf_conn)
 
-    routes = Ueberauth.init() |> set_options(conn, userinfo_endpoint: {:system, "UEBERAUTH_SCOOBY_DOO"})
+    routes =
+      Ueberauth.init() |> set_options(conn, userinfo_endpoint: {:system, "UEBERAUTH_SCOOBY_DOO"})
+
     System.put_env("UEBERAUTH_SCOOBY_DOO", "example.com/scooby")
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
     assert auth.info.name == "Scooby Doo"
@@ -165,22 +206,35 @@ defmodule Ueberauth.Strategy.BexioTest do
   describe "error handling" do
     test "handle_callback! handles Oauth2.Error", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
       conn =
-        conn(:get, "/auth/bexio/callback", %{code: "oauth2_error", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
-
-      routes = Ueberauth.init([])
-      assert %Plug.Conn{assigns: %{ueberauth_failure: failure}} = Ueberauth.call(conn, routes)
-      assert %Ueberauth.Failure{errors: [%Ueberauth.Failure.Error{message: "timeout", message_key: "error"}]} = failure
-    end
-
-    test "handle_callback! handles error response", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
-      conn =
-        conn(:get, "/auth/bexio/callback", %{code: "error_response", state: csrf_state}) |> set_csrf_cookies(csrf_conn)
+        conn(:get, "/auth/bexio/callback", %{code: "oauth2_error", state: csrf_state})
+        |> set_csrf_cookies(csrf_conn)
 
       routes = Ueberauth.init([])
       assert %Plug.Conn{assigns: %{ueberauth_failure: failure}} = Ueberauth.call(conn, routes)
 
       assert %Ueberauth.Failure{
-               errors: [%Ueberauth.Failure.Error{message: "something went wrong", message_key: "some error"}]
+               errors: [%Ueberauth.Failure.Error{message: "timeout", message_key: "error"}]
+             } = failure
+    end
+
+    test "handle_callback! handles error response", %{
+      csrf_state: csrf_state,
+      csrf_conn: csrf_conn
+    } do
+      conn =
+        conn(:get, "/auth/bexio/callback", %{code: "error_response", state: csrf_state})
+        |> set_csrf_cookies(csrf_conn)
+
+      routes = Ueberauth.init([])
+      assert %Plug.Conn{assigns: %{ueberauth_failure: failure}} = Ueberauth.call(conn, routes)
+
+      assert %Ueberauth.Failure{
+               errors: [
+                 %Ueberauth.Failure.Error{
+                   message: "something went wrong",
+                   message_key: "some error"
+                 }
+               ]
              } = failure
     end
 
@@ -189,7 +243,10 @@ defmodule Ueberauth.Strategy.BexioTest do
       csrf_conn: csrf_conn
     } do
       conn =
-        conn(:get, "/auth/bexio/callback", %{code: "error_response_no_description", state: csrf_state})
+        conn(:get, "/auth/bexio/callback", %{
+          code: "error_response_no_description",
+          state: csrf_state
+        })
         |> set_csrf_cookies(csrf_conn)
 
       routes = Ueberauth.init([])
