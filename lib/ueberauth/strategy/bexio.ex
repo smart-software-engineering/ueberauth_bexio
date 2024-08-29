@@ -128,8 +128,8 @@ defmodule Ueberauth.Strategy.Bexio do
 
     raw_user_info =
       bexio_user
-      |> Map.put("login_id", jwt_payload["login_id"])
-      |> Map.put("company_id", jwt_payload["company_id"])
+      |> Map.put("login_id", jwt_payload.login_id)
+      |> Map.put("company_id", jwt_payload.company_id)
 
     %Extra{
       raw_info: %{
