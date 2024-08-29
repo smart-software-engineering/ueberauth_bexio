@@ -2,6 +2,10 @@
 
 ## (Unreleased)
 
+## v0.1.4
+
+- Added company id and login id to the raw user info under extra
+
 ## v0.1.3
 
 - Adding company id

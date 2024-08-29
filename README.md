@@ -19,7 +19,7 @@
     ```elixir
     def deps do
       [
-        {:ueberauth_bexio, "~> 0.1.3"}
+        {:ueberauth_bexio, "~> 0.1.4"}
       ]
     end
     ```
@@ -103,6 +103,6 @@ To guard against client-side request modification, it's important to still check
 
 ## Copyright and License
 
-Copyright (c) 2024 Rico Metzger
+Copyright (c) 2024 Smart Software Engineering SRL
 
 Released under the MIT License, which can be found in the repository in [LICENSE](https://github.com/smart-software-engineering/ueberauth_bexio/blob/master/LICENSE).

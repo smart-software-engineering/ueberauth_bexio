@@ -123,10 +123,18 @@ defmodule Ueberauth.Strategy.Bexio do
   Stores the raw information (including the token) obtained from the bexio callback.
   """
   def extra(conn) do
+    bexio_user = conn.private.bexio_user
+    jwt_payload = conn.private.bexio_jwt_payload
+
+    raw_user_info =
+      bexio_user
+      |> Map.put("login_id", jwt_payload["login_id"])
+      |> Map.put("company_id", jwt_payload["company_id"])
+
     %Extra{
       raw_info: %{
         token: conn.private.bexio_token,
-        user: conn.private.bexio_user
+        user: raw_user_info
       }
     }
   end
@@ -150,7 +158,7 @@ defmodule Ueberauth.Strategy.Bexio do
         put_private(conn, :bexio_user, user)
 
       {:error, %OAuth2.Response{status_code: status_code}} ->
-        set_errors!(conn, [error("OAuth2", status_code)])
+        set_errors!(conn, [error("OAuth2", "#{status_code}")])
 
       {:error, %OAuth2.Error{reason: reason}} ->
         set_errors!(conn, [error("OAuth2", reason)])
