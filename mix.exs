@@ -31,7 +31,13 @@ defmodule UeberauthBexio.MixProject do
       {:ueberauth, "~> 0.10.0"},
       {:jason, "~> 1.4"},
       {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false},
-      {:mock, "~> 0.3", only: :test}
+      {:mock, "~> 0.3", only: :test},
+
+      # Typespecs everywhere...
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+
+      # Credo support
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
     ]
   end
 

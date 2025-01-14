@@ -1,4 +1,7 @@
 defmodule Ueberauth.Strategy.Bexio.BexioJwt do
+  @moduledoc """
+  This will parse and handle the JWT payload from the OAuth2 response.
+  """
   def parse_jwt_payload(%OAuth2.AccessToken{access_token: access_token}) do
     # Split and decode the token, then parse using json library
     case String.split(access_token, ".") do

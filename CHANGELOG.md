@@ -5,6 +5,7 @@
 ## v0.1.6
 
 - Bugfix SSL
+- Adding dialyzer and credo
 
 ## v0.1.5
 

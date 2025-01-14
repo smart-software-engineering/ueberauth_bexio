@@ -104,7 +104,6 @@ defmodule Ueberauth.Strategy.Bexio do
   def info(conn) do
     user = conn.private.bexio_user
 
-    # TODO: check all this fields
     %Info{
       email: user["email"],
       first_name: user["given_name"],
