@@ -2,6 +2,10 @@
 
 ## (Unreleased)
 
+## v0.1.6
+
+- Bugfix SSL
+
 ## v0.1.5
 
 - Bugfix Naming
