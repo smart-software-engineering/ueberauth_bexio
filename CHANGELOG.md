@@ -2,6 +2,11 @@
 
 ## (Unreleased)
 
+## v0.2.1
+
+- Further adaption to the new endpoint logic
+- `company_profile` in default scopes to keep with current logic
+
 ## v0.2.0
 
 - Updated the OAuth2 logic from idp to the new auth endpoint.

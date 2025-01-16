@@ -19,7 +19,7 @@
     ```elixir
     def deps do
       [
-        {:ueberauth_bexio, "~> 0.1.6"}
+        {:ueberauth_bexio, "~> 0.2.1"}
       ]
     end
     ```
@@ -93,7 +93,7 @@ By default the requested scope is "email". Scope can be configured either explic
 ```elixir
 config :ueberauth, Ueberauth,
   providers: [
-    bexio: {Ueberauth.Strategy.Bexio, [default_scope: "openid email profile"]}
+    bexio: {Ueberauth.Strategy.Bexio, [default_scope: "openid email profile company_profile"]}
   ]
 ```
 
