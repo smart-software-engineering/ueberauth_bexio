@@ -2,14 +2,14 @@ defmodule UeberauthBexio.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/smart-software-engineering/ueberauth_bexio"
-  @version "0.1.6"
+  @version "0.2.0"
 
   def project do
     [
       app: :ueberauth_bexio,
       version: @version,
       name: "Ueberauth Bexio",
-      elixir: "~> 1.15",
+      elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       package: package(),
       deps: deps(),

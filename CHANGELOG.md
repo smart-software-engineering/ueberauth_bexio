@@ -2,6 +2,10 @@
 
 ## (Unreleased)
 
+## v0.2.0
+
+- Updated the OAuth2 logic from idp to the new auth endpoint.
+
 ## v0.1.6
 
 - Bugfix SSL

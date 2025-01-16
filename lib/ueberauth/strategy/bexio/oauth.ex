@@ -13,9 +13,9 @@ defmodule Ueberauth.Strategy.Bexio.OAuth do
 
   @defaults [
     strategy: __MODULE__,
-    site: "https://idp.bexio.com/.well-known/openid-configuration",
-    authorize_url: "https://idp.bexio.com/authorize",
-    token_url: "https://idp.bexio.com/token",
+    site: "https://auth.bexio.com/realms/bexio/.well-known/openid-configuration",
+    authorize_url: "https://auth.bexio.com/realms/bexio/protocol/openid-connect/auth",
+    token_url: "https://auth.bexio.com/realms/bexio/protocol/openid-connect/token",
     token_method: :post
   ]
 

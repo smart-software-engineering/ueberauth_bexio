@@ -62,7 +62,7 @@ defmodule Ueberauth.Strategy.BexioTest do
 
   def oauth2_get(
         %{token: %{access_token: "userinfo_token"}},
-        "https://idp.bexio.com/userinfo",
+        "https://auth.bexio.com/realms/bexio/protocol/openid-connect/userinfo",
         _,
         _
       ),
@@ -94,8 +94,8 @@ defmodule Ueberauth.Strategy.BexioTest do
     assert [location] = get_resp_header(resp, "location")
 
     redirect_uri = URI.parse(location)
-    assert redirect_uri.host == "idp.bexio.com"
-    assert redirect_uri.path == "/authorize"
+    assert redirect_uri.host == "auth.bexio.com"
+    assert redirect_uri.path == "/realms/bexio/protocol/openid-connect/auth"
 
     assert %{
              "client_id" => "client_id",
