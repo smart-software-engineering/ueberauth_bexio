@@ -9,7 +9,7 @@ defmodule UeberauthBexio.MixProject do
       app: :ueberauth_bexio,
       version: @version,
       name: "Ueberauth Bexio",
-      elixir: "~> 1.17",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       package: package(),
       deps: deps(),
