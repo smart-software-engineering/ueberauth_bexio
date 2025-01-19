@@ -2,6 +2,11 @@
 
 ## (Unreleased)
 
+## v0.3.0
+
+- Removed parsing the jwt token, reading the information `company_id`, `company_name`, `uid` from the userinfo endpoint.
+- Adding `company_id`, `company_user_id`, `company_name` to the `raw_info` in `UeberAuth.Auth.Extra`.
+
 ## v0.2.1
 
 - Further adaption to the new endpoint logic

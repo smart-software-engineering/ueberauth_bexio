@@ -4,14 +4,13 @@ defmodule Ueberauth.Strategy.Bexio do
   """
 
   use Ueberauth.Strategy,
-    uid_field: :id,
+    uid_field: :sub,
     default_scope: "email profile openid",
     userinfo_endpoint: "https://auth.bexio.com/realms/bexio/protocol/openid-connect/userinfo"
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
   alias Ueberauth.Auth.Extra
-  alias Ueberauth.Strategy.Bexio.BexioJwt
 
   @doc """
   Handles initial request for Bexio authentication.
@@ -63,25 +62,18 @@ defmodule Ueberauth.Strategy.Bexio do
     conn
     |> put_private(:bexio_user, nil)
     |> put_private(:bexio_token, nil)
-    |> put_private(:bexio_jwt_payload, nil)
   end
 
   @doc """
-  Fetches the uid field from the JWT payload
+  Fetches the uid field from the user info endpoint.
   """
-  def uid(conn) do
-    # Do I really need to parse the conn twice because of uberauth?
-    payload = conn.private.bexio_jwt_payload
-
-    if payload, do: payload.login_id, else: nil
-  end
+  def uid(conn), do: conn.private.bexio_user["sub"]
 
   @doc """
   Includes the credentials from the bexio response.
   """
   def credentials(conn) do
     token = conn.private.bexio_token
-    jwt_payload = conn.private.bexio_jwt_payload
     scope_string = token.other_params["scope"] || ""
     scopes = String.split(scope_string, " ")
 
@@ -91,10 +83,7 @@ defmodule Ueberauth.Strategy.Bexio do
       scopes: scopes,
       token_type: Map.get(token, :token_type),
       refresh_token: token.refresh_token,
-      token: token.access_token,
-      other: %{
-        jwt_payload: jwt_payload
-      }
+      token: token.access_token
     }
   end
 
@@ -123,17 +112,14 @@ defmodule Ueberauth.Strategy.Bexio do
   """
   def extra(conn) do
     bexio_user = conn.private.bexio_user
-    jwt_payload = conn.private.bexio_jwt_payload
-
-    raw_user_info =
-      bexio_user
-      |> Map.put("login_id", jwt_payload[:login_id])
-      |> Map.put("company_id", jwt_payload[:company_id])
 
     %Extra{
       raw_info: %{
         token: conn.private.bexio_token,
-        user: raw_user_info
+        user: bexio_user,
+        company_id: bexio_user["company_id"],
+        company_name: bexio_user["company_name"],
+        company_user_id: bexio_user["company_user_id"]
       }
     }
   end
@@ -142,9 +128,8 @@ defmodule Ueberauth.Strategy.Bexio do
     conn =
       conn
       |> put_private(:bexio_token, token)
-      |> put_private(:bexio_jwt_payload, BexioJwt.parse_jwt_payload(token))
 
-    # userinfo_endpoint from https://idp.bexio.com/.well-known/openid-configuration
+    # userinfo_endpoint https://auth.bexio.com/realms/bexio/.well-known/openid-configuration
     # the userinfo_endpoint may be overridden in options when necessary.
     resp = Ueberauth.Strategy.Bexio.OAuth.get(token, get_userinfo_endpoint(conn))
 

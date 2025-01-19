@@ -2,7 +2,7 @@ defmodule UeberauthBexio.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/smart-software-engineering/ueberauth_bexio"
-  @version "0.2.1"
+  @version "0.3.0"
 
   def project do
     [
@@ -37,7 +37,7 @@ defmodule UeberauthBexio.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
 
       # Credo support
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
     ]
   end
 

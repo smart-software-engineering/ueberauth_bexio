@@ -7,7 +7,7 @@ defmodule Ueberauth.Strategy.BexioTest do
   import Ueberauth.Strategy.Helpers
 
   # Regular token with login_id inside
-  @success_token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbl9pZCI6IjU0YzhmMTQyLTExOWMtNDQ5Yy04YzEyLTg5MjY5ZGQ0MzdmOSIsImp0aSI6ImM0NTgyZDRjLWVhZDYtNDhlNS04NjA2LTU4MTRiODBmNDllNiIsImhlbGxvIjoid29ybGQifQ.h2smA-0OHRNd4OjT9DhemVQCGtyi3Fn0oe56oHiJpn8"
+  @success_token "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NGM4ZjE0Mi0xMTljLTQ0OWMtOGMxMi04OTI2OWRkNDM3ZjkiLCJqdGkiOiJjNDU4MmQ0Yy1lYWQ2LTQ4ZTUtODYwNi01ODE0YjgwZjQ5ZTYiLCJoZWxsbyI6IndvcmxkIn0.aOkBfmICzWJHeh9eOGB5rE8MZ8c_OnJUY6ddJBjvKdE"
 
   setup_with_mocks([
     {OAuth2.Client, [:passthrough],
@@ -55,7 +55,12 @@ defmodule Ueberauth.Strategy.BexioTest do
     do: {:error, %OAuth2.Response{body: %{"error" => "internal_failure"}}}
 
   def oauth2_get(%{token: %{access_token: @success_token}}, _url, _, _),
-    do: response(%{"id" => "1234_john", "name" => "John Doe", "email" => "john_doe@example.com"})
+    do:
+      response(%{
+        "sub" => "54c8f142-119c-449c-8c12-89269dd437f9",
+        "name" => "John Doe",
+        "email" => "john_doe@example.com"
+      })
 
   def oauth2_get(%{token: %{access_token: "uid_token"}}, _url, _, _),
     do: response(%{"uid_field" => "1234_jane", "name" => "Jane Doe"})
@@ -66,13 +71,20 @@ defmodule Ueberauth.Strategy.BexioTest do
         _,
         _
       ),
-      do: response(%{"id" => "1234_wilma", "name" => "Wilma Stone"})
+      do:
+        response(%{
+          "sub" => "1234_wilma",
+          "given_name" => "Wilma",
+          "family_name" => "Stone",
+          "company_id" => "1234",
+          "company_name" => "Flinstone Family"
+        })
 
   def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "example.com/shaggy", _, _),
-    do: response(%{"id" => "1234_shaggy", "name" => "Fred Stone"})
+    do: response(%{"sub" => "1234_shaggy", "given_name" => "Fred", "family_name" => "Stone"})
 
   def oauth2_get(%{token: %{access_token: "userinfo_token"}}, "example.com/scooby", _, _),
-    do: response(%{"id" => "1234_scooby", "name" => "Scooby Doo"})
+    do: response(%{"sub" => "1234_scooby", "given_name" => "Scooby", "family_name" => "Doo"})
 
   defp set_csrf_cookies(conn, csrf_conn) do
     conn
@@ -144,7 +156,8 @@ defmodule Ueberauth.Strategy.BexioTest do
 
     routes = Ueberauth.init() |> set_options(conn, userinfo_endpoint: "example.com/shaggy")
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
-    assert auth.info.name == "Fred Stone"
+    assert auth.info.first_name == "Fred"
+    assert auth.info.last_name == "Stone"
   end
 
   test "userinfo can be set via runtime config with default", %{
@@ -160,7 +173,8 @@ defmodule Ueberauth.Strategy.BexioTest do
       |> set_options(conn, userinfo_endpoint: {:system, "NOT_SET", "example.com/shaggy"})
 
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
-    assert auth.info.name == "Fred Stone"
+    assert auth.info.first_name == "Fred"
+    assert auth.info.last_name == "Stone"
   end
 
   test "userinfo uses default library value if runtime env not found", %{
@@ -173,7 +187,8 @@ defmodule Ueberauth.Strategy.BexioTest do
 
     routes = Ueberauth.init() |> set_options(conn, userinfo_endpoint: {:system, "NOT_SET"})
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
-    assert auth.info.name == "Wilma Stone"
+    assert auth.info.first_name == "Wilma"
+    assert auth.info.last_name == "Stone"
   end
 
   test "userinfo can be set via runtime config", %{csrf_state: csrf_state, csrf_conn: csrf_conn} do
@@ -186,7 +201,8 @@ defmodule Ueberauth.Strategy.BexioTest do
 
     System.put_env("UEBERAUTH_SCOOBY_DOO", "example.com/scooby")
     assert %Plug.Conn{assigns: %{ueberauth_auth: auth}} = Ueberauth.call(conn, routes)
-    assert auth.info.name == "Scooby Doo"
+    assert auth.info.first_name == "Scooby"
+    assert auth.info.last_name == "Doo"
     System.delete_env("UEBERAUTH_SCOOBY_DOO")
   end
 

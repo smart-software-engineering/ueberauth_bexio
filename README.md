@@ -19,7 +19,7 @@
     ```elixir
     def deps do
       [
-        {:ueberauth_bexio, "~> 0.2.1"}
+        {:ueberauth_bexio, "~> 0.3.0"}
       ]
     end
     ```
